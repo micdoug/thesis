@@ -1,0 +1,48 @@
+\documentclass[msc]{ppgccufmg}
+
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\usepackage[
+    english,
+    bookmarks=true,
+    bookmarksnumbered=true,
+    linktocpage,
+    colorlinks,
+    citecolor=black,
+    urlcolor=black,
+    linkcolor=black,
+    filecolor=black
+]{hyperref}
+\usepackage[square]{natbib}
+
+\begin{document}
+
+\ppgccufmg{
+    title={Improving D2D Multi-Hop Message Forwarding},
+    portuguesetitle={Melhorando o Encaminhamento de Mensagens em Redes D2D com Múltiplos Saltos},
+    authorrev={da Silva, Michael Dougras},
+    university={Federal University of Minas Gerais},
+    portugueseuniversity={Universidade Federal de Minas Gerais},
+    course={Computer Science},
+    portuguesecourse={Ciência da Computação},
+    address={Belo Horizonte - Minas Gerais},
+    date={2018-06},
+    keywords={d2d, multi-hop, network, forwarding},
+    advisor={Antônio Alfredo Ferreira Loureiro},
+    abstract={Abstract}{abstract},
+    dedication={dedication},
+    ack={acknowledgement},
+    epigraphtext={Not everything that counts can be counted, and not everything that can be counted counts.}{William Bruce Cameron - "Informal Sociology: A Casual Introduction to Sociological Thinking"}
+}
+
+\include{introduction}
+\include{groups-net}
+\include{st-drop}
+\include{conclusion}
+
+% Bibliografia
+\ppgccbibliography{bibliography}
+
+\end{document}
