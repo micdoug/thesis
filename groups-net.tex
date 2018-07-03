@@ -1,2 +1,106 @@
 \chapter{Message Forwarding in D2D Networks}
-Put some text here.
+
+In this chapter we present an overview of message forwarding algorithms for D2D networks. The first section
+presents the main contributions to the topic, discussing the state-of-art forwarding algorithms. Then we introduce
+an implementation proposal of Groups NET algorithm \citealt{nunes2016groupsnet} in a distributed environment.
+The implementation detail is explained in two parts: the first covers the group detection algorithm and the
+second the forwarding implementation itself.
+
+\section{Introduction}
+
+Introduce the challenge of forwarding messages in this scenario of dynamic nodes movement.
+
+The main solutions were initially proposed in the context of DTNs (Delay Tolerant Networks) or are derived from them,
+since the two types of networks share some intrinsic characteristics.
+
+Add a brief description about message forwarding in D2D.
+
+Add description for the following algorithms:
+
+* Epidemic routing
+* Prophet
+* Bubble Rap
+* Original Groups NET
+
+\section{The Distributed Groups NET}
+
+In this section we propose a distributed implementation of Groups NET forwarding algorithm. The solution is
+comprised of two stages: The first stage is group detection, in which nodes use neighborhood discovery to
+infer social group meeting using a local algorithm. The second stage is message forwarding, in which nodes
+use the generated group data to decide when to forward a message or not. The following sections describe in
+details the two stages.
+
+\subsection{Mobile Group Detection}
+
+The mobile group detection algorithm proposed here is derived from the ideas presented in \citealt{Nune1605:Group}.
+A group is defined as a set of people that get in contact on a given point of space and time. The authors show that
+groups have regular encounters along the time. This property can be used by forwarding algorithms. 
+
+In the original proposal the authors use a approach to detect groups based on global network knowledge. They basically
+build a contact graph considering a predefined time interval, and for each graph is used the Clique Percolation community
+detection algorithm. Each community detected by the algorithm is considered a group meeting in that time window. Then
+a metric called \textit{Group Correlation Coefficient} is used to detect instances of the same group across multiple time
+windows.
+
+With this approach the authors show that groups usually have regular encounters along the time (specially in daily and weekly basis).
+But they also discuss that the detection approach is unfeasible for a distributed environment, because it assumes a global network
+knowledge. However, authors also discuss that implementing a distributed solution for this should be a simple task, because in the local
+scope nodes can use neighborhood discover strategies and process regular neighbors encounters to decide their group encounters.
+
+In this work we expanded this idea to build a distributed solution for group detection.It is composed of four processes
+that are executed concurrently by each node using basically neighborhood inspection and some basic additional parameters. In the following sections each process is explained.
+
+\subsubsection{Device's Local Group Detection}
+
+This process is responsible for processing nodes' local contacts and decide when a group meeting happens.
+The algorithm is very simple. Each node keeps two lists of devices. The first is the \textit{friends} list (lets call it FL) 
+that keeps track of current nodes considered as friends, i.e, members of a group that have a recent encounter.
+The second list is the \textit{strangers} list (lets call it SL), that keeps track of recent nodes' contacts that are not yet 
+considered as friends. Each entry in these lists have a contact counter that keeps track of consecutive
+contacts with that node, and also have a inactive counter that keeps track of consecutive periods of time
+without contact with that node.
+
+The node inspects its neighborhood at each predefined \textit{time interval} and based on current neighbors
+it updates the friends and strangers list. This update is based on two predefined parameters: the \textit{friend threshold}
+and \textit{inactive threshold}. Lets call these parameters as FT and IT respectively. Based on these parameters the following 
+steps are executed:
+
+\begin{itemize}
+	\item At each time interval a node collects its current neighbors (lets call it CN).
+	\item The first step is to update the counters of friends list. For each current neighbor that is present in the friends
+	list, we increase the contact counter and reset the inactive counter. For each node present in the friends list that is 
+	not a current neighbor we reset the contact counter and increase the inactive counter.
+	\item The second step is to update the strangers list. For each current neighbor that is present in the strangers list
+	we reset the inactive counter and increase the contact counter. If the contact counter reaches the friend threshold
+	the node is promoted to friends list. For each node that is present in strangers list but is not a current neighbor
+	we reset the contact counter and increase the inactive counter. If the inactive counter reaches the inactive threshold
+	the node is removed from the strangers list. Nodes that are current neighbors and are not present in both friends and strangers
+	list are added in the strangers list with contact counter equals 1.
+	\item As a final step, we check the number of nodes in the friends list that are considered inactive. A node is considered 
+	inactive when the inactive counter reaches the inactive threshold. If more than 50 percent of the nodes in the friends list
+	is inactive, the friend list is archived and considered as a group meeting that happened in the past. When this happens we
+	clear the friends and strangers list and restart the algorithm. 
+\end{itemize}
+
+In the end this algorithm creates a list of local detected group meetings. This list is used by the local group combination process to
+detect instances of the same group with multiple encounters along the time.
+
+\subsubsection{Local Group Combination}
+
+In this step each mobile device process groups discovered in the previous step to discover groups that
+have multiple encounters along the time. The algorithm is based on a metric called \textit{Group Correlation Coefficient} defined in \cite{Nune1605:Group}. This metric basically computes the proportion of nodes shared between two sets. 
+
+Each node keeps a list of \textit{combined groups}, that keeps track of groups with multiple encounters along the time. For each
+local group detected in the previous process, we check if there is a combined group with Group Correlation Coefficient greater or equals 0.5.
+If there is, the local group is combined into the combined group adding its members to it and registering a new encounter. If there isn't, a new combined group is initialized with the local group data.
+
+The combined groups generated in this process are used by neighborhood inspection to compose the final groups considered in the forwarding algorithm.
+
+\subsection{Neighborhood Inspection}
+
+Besides inspecting its current neighborhood, at each considered time interval each node also collects its neighbors combined groups. The collected groups are combined with the groups generated by the local group combination process using the same approach described previously. Groups that have correlation coefficient greater of equals 0.5 are merged. This step is used to expand a node local vision with its neighbor
+network knowledge. So, in the end the local combined groups are updated with neighbors detected group information.
+
+\subsubsection{Group Graph Creation}
+
+In this step we build the graph of groups using the combined groups created by the neighborhood inspection process. The graph is created using the approach described in \cite{
