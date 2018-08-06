@@ -1,8 +1,9 @@
 \chapter{Message Forwarding in D2D Networks}
+\label{ch:GroupsNet}
 
 In this chapter we present an overview of message forwarding algorithms for D2D networks. The first section
 presents the main contributions to the topic, discussing the state-of-art forwarding algorithms. Then we introduce
-an implementation proposal of Groups NET algorithm \citealt{nunes2016groupsnet} in a distributed environment.
+an implementation proposal of Groups NET algorithm [add-reference] in a distributed environment.
 The implementation detail is explained in two parts: the first covers the group detection algorithm and the
 second the forwarding implementation itself.
 
@@ -32,9 +33,9 @@ details the two stages.
 
 \subsection{Mobile Group Detection}
 
-The mobile group detection algorithm proposed here is derived from the ideas presented in \citealt{Nune1605:Group}.
+The mobile group detection algorithm proposed here is derived from the ideas presented in \cite{groupMobility}.
 A group is defined as a set of people that get in contact on a given point of space and time. The authors show that
-groups have regular encounters along the time. This property can be used by forwarding algorithms. 
+group encounters have some level of regularity along the time (mainly at daily and weekly basis). This property can be used by forwarding algorithms. 
 
 In the original proposal the authors use a approach to detect groups based on global network knowledge. They basically
 build a contact graph considering a predefined time interval, and for each graph is used the Clique Percolation community
@@ -88,7 +89,7 @@ detect instances of the same group with multiple encounters along the time.
 \subsubsection{Local Group Combination}
 
 In this step each mobile device process groups discovered in the previous step to discover groups that
-have multiple encounters along the time. The algorithm is based on a metric called \textit{Group Correlation Coefficient} defined in \cite{Nune1605:Group}. This metric basically computes the proportion of nodes shared between two sets. 
+have multiple encounters along the time. The algorithm is based on a metric called \textit{Group Correlation Coefficient} defined in [add-reference]. This metric basically computes the proportion of nodes shared between two sets. 
 
 Each node keeps a list of \textit{combined groups}, that keeps track of groups with multiple encounters along the time. For each
 local group detected in the previous process, we check if there is a combined group with Group Correlation Coefficient greater or equals 0.5.
@@ -103,4 +104,4 @@ network knowledge. So, in the end the local combined groups are updated with nei
 
 \subsubsection{Group Graph Creation}
 
-In this step we build the graph of groups using the combined groups created by the neighborhood inspection process. The graph is created using the approach described in \cite{
+In this step we build the graph of groups using the combined groups created by the neighborhood inspection process. The graph is created using the approach described in \cite{groupMobility}

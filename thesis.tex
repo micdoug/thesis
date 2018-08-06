@@ -3,6 +3,9 @@
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{type1ec}
+\usepackage{graphicx}
+\usepackage{cite}
 
 \usepackage[
     english,
@@ -15,7 +18,7 @@
     linkcolor=black,
     filecolor=black
 ]{hyperref}
-\usepackage[square]{natbib}
+%\usepackage[square]{natbib}
 
 \begin{document}
 
@@ -37,12 +40,11 @@
     epigraphtext={Not everything that counts can be counted, and not everything that can be counted counts.}{William Bruce Cameron - "Informal Sociology: A Casual Introduction to Sociological Thinking"}
 }
 
-\include{introduction}
-\include{groups-net}
-\include{st-drop}
-\include{conclusion}
-
-% Bibliografia
-\ppgccbibliography{references.bib}
+\input{introduction}
+\input{message-forwarding}
+\input{st-drop}
+\input{groups-net}
+\input{conclusion}
+\ppgccbibliography{references}
 
 \end{document}
