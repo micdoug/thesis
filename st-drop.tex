@@ -1,2 +1,434 @@
-\chapter{Buffer Management Strategies}
+\chapter{ST-Drop: A Novel Buffer Management Strategy}
 \label{ch:StDrop}
+
+In D2D multi hop forwarding protocols nodes need to cooperate and act as relays to messages of other nodes. As result of this cooperative behavior,
+each node needs to share its own resources with the network, for example, allocating memory to the message in a buffer. This buffer is used to temporarily
+store messages being forwarded, and its capacity is limited. Consequently, the network traffic load, combined with the way a given forwarding algorithm operates,
+can overflow the devices’ buffers. In single copy protocols this problem is alleviated because the number of messages in the network is relatively lower. However,
+in multi hop protocols this is a real problem, because multiple copies of a message are spread in the network, so the traffic can grow very quickly. Besides allowing
+multiple copies of a message, a central entity with global network knowledge usually does not exist. As consequence, nodes do not know when a message is delivered to the destination.
+Even when the message is delivered in multi copy forwarding algorithms, copies of this message remain in the network until they exceed their TTLs (time to live)
+or are dropped by other mechanism \cite{bindra2012need}. Therefore, a good buffer management mechanism is a critical requirement in this scenario.
+
+This chapter presents a buffer management algorithm for D2D multi hop and multi copy forwarding algorithms, named Space-Time Drop (ST-Drop). This algorithm explores the local
+information to measure the time and space coverage of the message in the network. The basic idea is that a message with a greater time and space coverage is more likely to have
+been delivered, so it can be dropped first. Through experiments with a real mobility trace containing 115 nodes and a synthetic mobility trace containing 500 nodes,
+we show that ST-Drop enables routing protocols to achieve a good delivery ratio with low network overhead. With the purpose of evaluating the performance of ST-Drop
+when applied to different types of opportunistic routing algorithms, we consider an epidemic based, a probabilistic, and a social aware algorithm.
+Using three well known forwarding algorithms, we show that ST-Drop helps the forwarding protocols to achieve a good delivery ratio with low overhead.
+
+\section{Buffer Management in D2D Networks}
+
+In D2D networks, users must devote a fraction of their devices’ storage to be used as a buffer that temporarily stores the messages carried by them.
+The basic idea to manage such buffer, to avoid its overflow while maintaining opportunistic forwarding efficiency, is to use congestion control mechanisms.
+\cite{silva2015survey} have classified congestion control mechanisms and provided an extensive review of message drop policies used in opportunistic networks.
+In this section, we go over some of the state-of-art message drop policies highlighting their specific features.
+
+\cite{lindgren2006evaluation} proposed the Evict Most Forwarded (MOFO) drop policy, which uses the idea that a message forwarded a large number
+of times has a higher probability to be delivered, even if it is dropped locally. They also proposed the Evict Shortest Life Time First (SHLI) drop policy, which
+is based on the idea that it makes more sense to spend resources on messages that have a greater TTL, because, intuitively, these messages have a higher probability
+to be delivered. The Drop Largest policy~\cite{rashid2010efficient} selects big size messages to drop first, because, by doing this, more space is freed from the buffer.
+Other basic policy is FIFO, in which, as the name suggests, messages that arrived first are dropped first.
+
+\cite{rashid2013message} proposed the Message Drop Control Source Relay (MDC-SR) buffer management algorithm, in which nodes stop receiving incoming messages
+when the buffer occupancy achieves a defined upper bound, except when the node is the destination of the message. With this approach, the algorithm decreases the number of message
+drops in the network. Through experiments they showed that MDC-SR optimized the performance of Epidemic, Prophet and First Contact routing algorithms in terms of delivery ratio and
+network overhead.
+
+\cite{krifa2008optimal} proposed the Global Knowledge Based Drop (GBD-Drop) buffer management algorithm, in which they first assume a global knowledge of the network
+to decide which messages to drop, achieving an optimal performance. They proposed a distributed version of the algorithm that uses statistic learning to approximate the global knowledge
+of the network. Through experiments they showed that the centralized and distributed versions of the algorithm outperform the basic drop policies. The GDB-Drop can also be configured
+to achieve a better average delivery delay or better average delivery ratio.
+
+Rashid et {al.} proposed the E-Drop buffer management algorithm \cite{rashid2011drop}. In this algorithm, messages with size greater or equal to the incoming message are dropped first
+when it is needed to free space in the buffer. In the case of an incoming message with size greater than the messages in the buffer, it works like the FIFO policy. This policy minimizes
+the drop of messages because it will usually remove only one message from the buffer to receive the incoming message. Through simulations, using mobility models, they show that E-Drop
+outperforms the MOFO algorithm.
+
+\cite{li2009n} proposed the N-Drop buffer management algorithm, in which messages transmitted more than a predefined constant are dropped first. Through simulations, they
+showed that this algorithm outperforms FIFO when used with Epidemic routing algorithm. \cite{ayub2010t} also proposed the T-Drop buffer management algorithm, in which
+messages with size in a predefined range $T$ are dropped first. Through simulations the authors show that this algorithm outperforms FIFO when applied to the routing algorithms Epidemic
+and Prophet.
+
+\cite{naves2012lps} proposed two new buffer management policies. The first one is named Least Recently Forwarded (LRF), and it drops messages that were forwarded more
+recently. The second one is named Less Probable Sprayed (LPS) and it drops messages that have less probability to be delivered first. Through experiments with Epidemic and Prophet
+routing algorithms using real-data traces, the authors showed that both algorithms outperform FIFO and MOFO in delivery ratio and overhead.
+
+The aforementioned buffer management algorithms are based on only one local metric, for example buffer time, forward count, TTL and message size. These metrics represent a good choice,
+because they are independent of the routing algorithm. However, their isolated meaning can be insufficient to decide whether to drop a message or not. We have combined basic metrics to
+create a new buffer management algorithm named Space-Time Drop (ST-Drop). In the following section, we describe the ST-Drop algorithm.
+
+\section{The ST-Drop Algorithm}
+\label{sce:stDrop}
+
+The ST-Drop formulation starts with the idea that a message with a greater space and time coverage in the network has a greater probability to have been already delivered, so it can
+be dropped first. Based on this idea, we have defined a space coefficient $S_{c}$ that measures the space coverage of the message in the network, and the time coefficient $T_{c}$
+that measures the time coverage of the message in the network. Therefore, to compute the space-time coverage $ST_{c}$, we use the simple function:
+
+\begin{equation}
+    ST_{c} = S_{c} \cdot T_{c}.
+\end{equation}
+
+With this first formulation, we do not define how to compute $S_c$ and $T_c$. Buffer management algorithms for D2D networks are ideally implemented in a distributed way, so we have
+to be restricted to local information. Besides this, we want to keep ST-Drop independent of the routing algorithm. Consequently, we decided to combine the metrics used by the basic
+algorithms to compute our defined metrics $S_c$ and $T_c$.
+
+The first issue is how to measure the space coverage. In cellular networks, the contacts are driven by human mobility. Intuitively we can say that a message carried by only one person
+will have less opportunities to be forwarded than a message carried by two or more people, because it will be restricted to the mobility of only one person. Thus, we can say that the
+number of devices carrying a message is a sensible measure of the space coverage of the message, because the space coverage of a message is a direct result of the combination of the
+devices' mobility. Therefore, we use the same metric used by the MOFO algorithm to measure the space coverage, i.e., the number of times a message was forwarded by a node.
+The forward counter is a local measure of the number of devices carrying a message.
+
+The second issue is how to measure the time coverage. FIFO exploits the time the messages have been carried by a node to decide which message to drop first.
+Using only this metric we could drop a recently created message and let a message with almost ending TTL in the buffer. SHLI uses the TTL of messages to decide
+which message should be dropped first. Using only this metric we could let a message with a huge TTL indefinitely in the buffer of a node that has low delivery
+probability for it. Also, in a real scenario, messages may have different TTL values. Thus, messages with relative low initial TTL would be penalized. Therefore,
+ST-Drop combines the idea of FIFO and SHLI, normalizing the carrying time $CT$, that is the time a message is stored in the buffer of a node, with the TTL of the message,
+defining $T_{c}$ as:
+
+\begin{equation}
+    T_{c} = \frac{CT}{TTL}.
+\end{equation}
+
+With this formulation, we can now compute the space-time coverage using only local information. The ST-Drop policy is formalized in Algorithm \ref{alg:stDrop}.
+ST-Drop is called only when there is no available space in the buffer to receive an incoming message. The algorithm sorts the messages in reverse order by their $ST_c$
+values and store them in a list. The messages with $ST_c$ equals 0 are removed from the list, which implies that they will never be dropped. The algorithm considers that
+dropping a message with space-time equals 0 is not fair, because the message was not forwarded so far. Then, the first message of the list is dropped until enough space is
+freed for the new message or the list becomes empty. If enough space is freed, then the algorithm returns a confirmation to receive the incoming message. Otherwise,
+the device must reject the incoming message.
+
+\begin{algorithm}
+
+ \caption{ST-Drop algorithm}
+ \label{alg:stDrop}
+ \begin{algorithmic}[1]
+ \renewcommand{\algorithmicrequire}{\textbf{Input:}}
+ \renewcommand{\algorithmicensure}{\textbf{Output:}}
+ \REQUIRE incomingMessage
+ \REQUIRE buffer
+ \ENSURE  receive
+ %\\ \textit{Check if the incoming message size is higher than the buffer capacity}
+  \IF {incomingMessage.size > buffer.capacity}
+    \RETURN false
+  \ENDIF
+ \\ \textit{Sort the messages in reverse order by $ST_c$} :
+  \STATE msglist = sort(buffer)
+ \\ \textit{Remove messages with $ST_c == 0$}
+  \STATE msglist.filter()
+ \\ \textit{Drop messages until enough space is freed}
+  \STATE incsize = incomingMessage.size
+  \STATE available = buffer.availablespace
+  \WHILE {available < incsize and not msgList.empty}
+    \STATE msg = msglist.removefirst()
+    \STATE buffer.drop(msg)
+    \STATE available += msg.size
+  \ENDWHILE
+  \IF {available < incsize}
+  \RETURN false
+  \ELSE
+  \RETURN true
+  \ENDIF
+ \end{algorithmic}
+ \end{algorithm}
+
+\section{Simulation Methodology}
+\label{sec:experiments}
+
+In this section, we describe the simulations we have performed to evaluate ST-Drop. Firstly, we describe the metrics for D2D opportunistic communication that we have evaluated,
+then we present the opportunistic routing algorithms in which we have applied ST-Drop, next we describe the two mobility traces used to emulate the network nodes' mobility and
+their proximity contacts, and finally we discuss the parameters and configurations we used in our experiments.
+
+\subsection{Metrics}
+
+With the goal of comparatively evaluating ST-Drop with other message drop policies, we used the following traditional opportunistic network metrics:
+
+\begin{itemize}
+\item \textbf{Delivery ratio:} evaluates the percentage of successfully delivered messages along the time;
+\item \textbf{Network Overhead:} measures the number of retransmissions per created message in the network, i.e., the number of D2D transmissions that each algorithm performs along the time normalized by the number of created messages.
+\end{itemize}
+
+Message drop policies for D2D networks should achieve cost-effective delivery considering these metrics, i.e., the highest possible delivery ratio with the lowest possible network
+overhead. Successfully delivered messages are those which the base station will not need to deliver itself, thus using less bandwidth. A high number of message re-transmissions (high overhead)
+may negatively impact the users' experience by, for example, increasing devices' energy expenditure.
+
+\subsection{Opportunistic Forwarding Algorithms}
+\label{sec:routingAlgorithms}
+
+We used algorithms based on three different approaches to study the behavior of our solution when integrated with different routing algorithms.
+The first routing algorithm is the Epidemic \cite{vahdat2000epidemic}, also known as Flooding. This algorithm is considered as one of the most basic ones
+as it is not based on utility functions or similar metrics. In this algorithm, at each encounter between two nodes, they exchange all the messages they have in their respective buffers.
+The second routing algorithm that we considered is the Prophet \cite{lindgren2003probabilistic}. This algorithm uses a delivery probability as utility function to decide whether to
+forward a message or not. And the third is the Bubble Rap \cite{hui2011bubble}. It is a social-aware algorithm based on the concept of community and network node's popularity.
+These algorithms were presented with more details in chapter \ref{ch:MessageForwarding}.
+
+We are using routing algorithms based on epidemic-based routing, probabilistic functions and social-context.
+In this way, we can evaluate the impact of different types of routing algorithms when using ST-Drop.
+
+\subsection{Mobility Traces}
+\label{sec:datasets}
+
+We have used two mobility traces to emulate nodes' mobility. The first one is the NCCU trace \cite{tsai2015nccu}, a real-world dataset that monitors the mobility of 115 students inside
+a campus for 15 days. The second one is a synthetic trace generated by the Small World in Motion (SWIM) mobility model \cite{swim-secon10}. This trace is based on a state-of-the-art mobility
+model that captures the existence of social communities influencing human mobility and it simulates the mobility of 500 people for 11 days. We have chosen the two traces to test ST-Drop
+under different network scales.
+
+\subsection{Execution}
+\label{sec:simulation}
+
+We used The ONE simulator \cite{keranen2009one} to emulate the execution of the opportunistic routing algorithms using different message dropping policies. It is a discrete event
+simulator focused on opportunistic networks. By default, the simulator does not support custom buffer management algorithms and the Bubble Rap routing algorithm, therefore we
+implemented these features\footnote{The source code is available at https://github.com/micdoug/the-one/tree/58e207ac44d5012fac5d103da781d30266164216}.
+
+To test the ST-Drop, we defined the buffer capacity and a network traffic model. As discussed in \cite{grasic2012analysis}, there is no pattern when it comes to define a traffic
+model to test solutions in this scenario. Thus, we chose sensible values in our simulation. The buffer capacity was defined as 1GB. Messages have seven days of TTL and are generated
+at random times within the trace duration. Message sizes are chosen from the interval [50MB,100MB] with uniform probability. The source and destination pair for each created message
+is also selected with uniform probability among the nodes in the network.
+
+We have defined two network traffic load levels based on the number of nodes of each scenario. The first load level generates messages equals to 50\% of the number of nodes at each
+day, and the second generates 100\%. Table \ref{tab:trafficLevels} summarizes the number of messages generated in each traffic load level:
+
+\begin{table}[H]
+\centering
+\caption{Network Traffic Load Scenarios}
+\label{tab:trafficLevels}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\multicolumn{2}{|c|}{\textbf{Scenario}} & \textbf{Messages/Day} & \textbf{Total} \\ \hline
+\multirow{3}{*}{NCCU}       & 50        & 58                    & 522            \\ \cline{2-4}
+                            %& 75        & 86                    & 774            \\ \cline{2-4}
+                            & 100       & 115                   & 1035           \\ \hline
+\multirow{3}{*}{SWIM}       & 50        & 250                   & 1250           \\ \cline{2-4}
+                            %& 75        & 375                   & 1875           \\ \cline{2-4}
+                            & 100       & 500                   & 2500           \\ \hline
+\end{tabular}
+\end{table}
+
+We have emulated each scenario with each traffic level 10 times using different seeds to generate message's sources and destinations, and messages size.
+The average delivery ratio and the average network overhead of each scenario were computed and presented with 95\% confidence intervals.
+
+\section{Results}
+\label{sec:results}
+
+% images nccu 100
+\begin{figure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/100/Epidemic-delivery.png}
+        \caption{NCCU100 - Delivery Epidemic}
+        \label{fig:nccu100EpidemicDel}
+    \end{subfigure}
+    \hfill %%
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/100/Epidemic-overhead.png}
+        \caption{NCCU100 - Overhead Epidemic}
+        \label{fig:nccu100EpidemicOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/100/Prophet-delivery.png}
+        \caption{NCCU100 - Delivery Prophet}
+        \label{fig:nccu100ProphetDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/100/Prophet-overhead.png}
+        \caption{NCCU100 - Overhead Prophet}
+        \label{fig:nccu100ProphetOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/100/BubbleRap-delivery.png}
+        \caption{NCCU100 - Delivery Bubble}
+        \label{fig:nccu100BubbleDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/100/BubbleRap-overhead.png}
+        \caption{NCCU100 - Overhead Bubble}
+        \label{fig:nccu100BubbleOver}
+    \end{subfigure}
+
+    \caption{Comparison of message drop policies in the NCCU trace with 100\% traffic}
+    \label{fig:nccu100}
+\end{figure}
+
+% images nccu 50
+\begin{figure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/50/Epidemic-delivery.png}
+        \caption{NCCU50 - Delivery Epidemic}
+        \label{fig:nccu50EpidemicDel}
+    \end{subfigure}
+    \hfill %%
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/50/Epidemic-overhead.png}
+        \caption{NCCU50 - Overhead Epidemic}
+        \label{fig:nccu50EpidemicOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/50/Prophet-delivery.png}
+        \caption{NCCU50 - Delivery Prophet}
+        \label{fig:nccu50ProphetDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/50/Prophet-overhead.png}
+        \caption{NCCU50 - Overhead Prophet}
+        \label{fig:nccu50ProphetOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/50/BubbleRap-delivery.png}
+        \caption{NCCU50 - Delivery Bubble}
+        \label{fig:nccu50BubbleDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/nccu/50/BubbleRap-overhead.png}
+        \caption{NCCU50 - Overhead Bubble}
+        \label{fig:nccu50BubbleOver}
+    \end{subfigure}
+
+    \caption{Comparison of message drop policies in the NCCU trace with 50\% traffic}
+    \label{fig:nccu50}
+\end{figure}
+
+% images swim 100
+\begin{figure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/100/Epidemic-delivery.png}
+        \caption{SWIM100 - Delivery Epidemic}
+        \label{fig:swim100EpidemicDel}
+    \end{subfigure}
+    \hfill %%
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/100/Epidemic-overhead.png}
+        \caption{SWIM100 - Overhead Epidemic}
+        \label{fig:swim100EpidemicOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/100/Prophet-delivery.png}
+        \caption{SWIM100 - Delivery Prophet}
+        \label{fig:swim100ProphetDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/100/Prophet-overhead.png}
+        \caption{SWIM100 - Overhead Prophet}
+        \label{fig:swim100ProphetOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/100/BubbleRap-delivery.png}
+        \caption{SWIM100 - Delivery Bubble}
+        \label{fig:swim100BubbleDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/100/BubbleRap-overhead.png}
+        \caption{SWIM100 - Overhead Bubble}
+        \label{fig:swim100BubbleOver}
+    \end{subfigure}
+
+    \caption{Comparison of message drop policies in the SWIM trace with 100\% traffic}
+    \label{fig:swim100}
+\end{figure}
+
+% images swim 50
+\begin{figure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/50/Epidemic-delivery.png}
+        \caption{SWIM50 - Delivery Epidemic}
+        \label{fig:swim50EpidemicDel}
+    \end{subfigure}
+    \hfill %%
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/50/Epidemic-overhead.png}
+        \caption{SWIM50 - Overhead Epidemic}
+        \label{fig:swim50EpidemicOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/50/Prophet-delivery.png}
+        \caption{SWIM50 - Delivery Prophet}
+        \label{fig:swim50ProphetDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/50/Prophet-overhead.png}
+        \caption{SWIM50 - Overhead Prophet}
+        \label{fig:swim50ProphetOver}
+    \end{subfigure}
+
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/50/BubbleRap-delivery.png}
+        \caption{SWIM50 - Delivery Bubble}
+        \label{fig:swim50BubbleDel}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.5\columnwidth}
+        \includegraphics[width=\linewidth]{imgs/swim/50/BubbleRap-overhead.png}
+        \caption{SWIM50 - Overhead Bubble}
+        \label{fig:swim50BubbleOver}
+    \end{subfigure}
+
+    \caption{Comparison of message drop policies in the SWIM trace with 50\% traffic}
+    \label{fig:swim50}
+\end{figure}
+
+The simulation results for NCCU100 and NCCU50 are presented in Figures \ref{fig:nccu100} and \ref{fig:nccu50}, respectively. The results of SWIM100 e SWIM50 are expressed in Figures
+\ref{fig:swim100} and \ref{fig:swim50}, respectively.
+The delivery ratio values were obtained considering the time spent to delivery each message since its creation time.
+The result is presented in a way that it can be analysed with different TTL values, for example, considering only points under the time value 48 in the x axis,
+we will get the delivery ratio with TTL of 48 hours.
+
+Considering the Epidemic routing, the delivery ratio in the NCCU100 and NCCU50 scenarios is expressed in Figures \ref{fig:nccu100EpidemicDel} and \ref{fig:nccu50EpidemicDel},
+respectively. We can see that the delivery ratio of ST-Drop policy is higher than E-Drop and MOFO for almost all the simulation time. It is also higher than FIFO for time values
+higher than 48 hours and is higher than SHLI for time values higher than 120 hours. We can also see that the different traffic loads have not changed the behavior of the policies.
+The delivery ratio changed proportionally for the tested policies. The overhead results of NCCU100 and NCCU50 are expressed in Figures \ref{fig:nccu100EpidemicOver} and
+\ref{fig:nccu50EpidemicOver}, respectively. In these two figures, we can see that the overhead results in the two traffic levels have similar behavior. All drop policies
+have overhead values very similar for almost all the simulation time. But we can see that in the last four days, ST-Drop continues to grow while others get small values.
+This is happening because in the last four days the delivery probability of ST-Drop continues to grow too, while other policies do not, consequently the overhead increase is
+expected in Epidemic when more messages are delivered. The delivery ratios in the SWIM100 and SWIM50 scenarios are expressed in Figures \ref{fig:swim100EpidemicDel} and
+\ref{fig:swim50EpidemicDel}, respectively. In these figures, we can see that all drop policies have similar results for delivery ratio considering the confidence interval.
+And, as in NCCU scenario, with both traffic levels, we can see a similar behavior. The overhead in the SWIM100 and SWIM50 scenarios is expressed in Figures
+\ref{fig:swim100EpidemicOver} and \ref{fig:swim50EpidemicOver}, respectively. Again, we can see similar behavior under the two traffic levels.
+
+Considering the Prophet algorithm, the delivery ratio in the NCCU100 and NCCU50 scenarios is expressed in Figures \ref{fig:nccu100ProphetDel} and \ref{fig:nccu50ProphetDel},
+respectively. We can see that the delivery ratio of ST-Drop is higher than FIFO, MOFO and E-Drop for almost all time values, and is higher than SHLI for time values higher
+than 120 hours. Again, we can see that under different traffic levels the results show similar behavior. The overhead in the NCCU100 and NCCU50 scenarios is expressed in Figures
+\ref{fig:nccu100ProphetOver} and \ref{fig:nccu50ProphetOver}, respectively. We can see again that the results show similar behavior for both traffic levels.
+In this case, ST-Drop obtained the best results during all simulation time. The delivery ratio in the SWIM100 and SWIM50 scenarios is expressed in Figures
+\ref{fig:swim100ProphetDel} and \ref{fig:swim50ProphetDel}, respectively. Again, we see similar behavior under both traffic levels. The delivery ratio is similar
+for all drop policies, except for time values between 72 and 144 hours where SHLI obtained slightly better results. The overhead in the SWIM100 and SWIM50 is
+expressed in Figures \ref{fig:swim100ProphetOver} and \ref{fig:swim50ProphetOver}, respectively. In this case, we obtained the same behavior of NCCU scenarios,
+in which ST-Drop obtained the best results during all simulation time.
+
+Finally, we analyze the policies when used with Bubble Rap routing. The delivery ratio in the NCCU100 and NCCU50 scenarios is expressed in Figures \ref{fig:nccu100BubbleDel}
+and \ref{fig:nccu50BubbleDel}, respectively. We can see similar behavior under both traffic levels. The ST-Drop obtained a higher delivery ratio than FIFO,
+E-DROP and MOFO for almost all time values, and higher values than SHLI for time values higher than 120. The overhead in the NCCU100 and NCCU50 scenarios is expressed
+in Figures \ref{fig:nccu100BubbleOver} and \ref{fig:nccu50BubbleOver}, respectively. As with Prophet routing, in this scenario the ST-Drop obtained the best
+results during all simulation time, and we can see similar behavior under both traffic levels. The delivery ratio in the SWIM100 and SWIM50 scenarios is expressed in
+Figures \ref{fig:swim100BubbleDel} and \ref{fig:swim50BubbleDel}, respectively. Again, we see similar behavior under both traffic levels. The delivery ratio is similar
+for all drop policies, but ST-Drop obtained slightly better results for time values greater than 120 hours. The overhead in the SWIM100 and SWIM50 is expressed in Figures
+\ref{fig:swim100BubbleOver} and \ref{fig:swim50BubbleOver}, respectively. In this case, we obtained the same behavior of NCCU scenarios, in which ST-Drop obtained the best
+results during all simulation time.
+
+In general, the ST-Drop policy obtained better delivery ratio values for all the three routing algorithms. For the overhead ratio, ST-Drop obtained the best results in all
+scenarios with Prophet and Bubble Rap routing algorithms. The SHLI policy obtained better results with low TTLs because in this policy, messages that spent more time in the
+network are dropped first, so it is expected that most delivered messages, when using this policy, have low delivery time. But when we consider all TTL range, ST-Drop obtained
+better results than SHLI.
+
+It is worth mentioning that, in the Prophet algorithm, the ST-Drop overhead was much lower when compared to the other strategies. With respect to Bubble Rap, this result is
+even better, since ST-Drop reaches overhead values that are three times smaller than the second-best policy. This latter observation is particularly important because, as of today,
+social-aware algorithms such as Bubble Rap are considered the state-of-art for cost-effective opportunistic routing. This assertion can be reassured by contrasting the delivery
+ratio and overhead values for Epidemic, Prophet, and Bubble Rap. In both mobility traces, we can see that Bubble Rap achieves the best delivery ratio and the lowest overhead,
+especially when used together with ST-Drop.
+
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+This work proposed a new buffer management algorithm for D2D opportunistic networks named Space-Time-Drop (ST-Drop). This algorithm uses the idea that a message with
+more space and time coverage can be dropped first, because it is more likely that such message has already been delivered. We have combined the idea of basic drop policies
+to measure the space and time coverage of a message using local information. Therefore, our solution can be easily deployed in distributed environments. We evaluated
+our solution with simulations in Epidemic, Prophet, and Bubble Rap routing algorithms using three different traffic loads with two different mobility traces. We showed
+that our solution achieves higher delivery ratio with the three routing algorithms and much lower overhead values with Prophet and Bubble Rap. Considering all combinations of
+the evaluated opportunistic routing algorithms and buffer management policies, the ST-Drop combined with Bubble Rap achieved, in all experiments, the best cost-effectiveness, i.e.,
+the highest delivery ratio with the lowest network overhead. This result shows that ST-Drop significantly contributes for improving the cost-effectiveness of opportunistic D2D Networks.
+
+As future work, we plan to apply ST-Drop to other opportunistic D2D routing algorithms. Since ST-Drop exhibited good performance in social-aware algorithms, it is interesting to apply
+it in other recent social-aware routing strategies, such as Groups-Net~\cite{nunes2016groups}. We also highlight the possibility of exploring more metrics to measure space and time
+coverage. Information obtained from the device's context, such as battery information and actual spatial information (GPS), could be used to improve ST-Drop.

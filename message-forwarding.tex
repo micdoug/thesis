@@ -1,4 +1,4 @@
-\chapter{Message Forwarding D2D Networks}
+\chapter{Message Forwarding in D2D Networks}
 \label{ch:MessageForwarding}
 
 In D2D networks messages are forwarded using intermediate nodes as relays through the \textit{store-carry-and-forward} paradigm. A node after receiving a message,
@@ -45,8 +45,9 @@ copies per created message. It is also important to notice that multi hop protoc
 delivery time of few milliseconds, in contrast in D2D multi hop we consider delivery times of some days, a week or higher depending on the used approach.
 
 The Epidemic protocol is the simplest multi copy algorithm \cite{vahdat2000epidemic}. It uses the flooding strategy, in which at each encounter nodes exchange all messages they have.
-This protocol achieves the best possible delivery ratio, however it also has the worst message overhead, which in turns makes it unfeasible for real scenarios. There some approaches
-derived from epidemic that uses a controlled flooding strategy. The best example is the Spray and Wait protocol \cite{spyropoulos2005spray}, in which the source node forwards a predefined
+Considering a scenario with unlimited nodes' buffer sizes, the Epidemic consists of the upper bound for the delivery ratio and for the network overhead, since it always transmits
+messages in all encounters. However, due to the enormous number of message copies in the network, when the buffer sizes are limited, this strategy may not achieve a high delivery ratio.
+There some approaches derived from epidemic that uses a controlled flooding strategy. The best example is the Spray and Wait protocol \cite{spyropoulos2005spray}, in which the source node forwards a predefined
 number of message copies during its contacts. Nodes that received the message them uses the direct delivery approach to forward the message to the destiny. There is also a variation called Binary Spray and Wait \cite{spyropoulos2005spray} in which
 the source node starts with $L$ messages. At each encounter the source forwards $\frac{L}{2}$ copies until there is only 1 copy left, then it uses the direct delivery strategy. Other nodes
 takes the same approach of the source, but they start with the number of copies received. Both approaches show good delivery ratio with low overhead, however the authors discuss that
