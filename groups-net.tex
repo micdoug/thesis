@@ -1,29 +1,45 @@
 \chapter{Groups NET Distributed Implementation}
 \label{ch:GroupsNet}
 
-In this chapter we present an overview of message forwarding algorithms for D2D networks. The first section
-presents the main contributions to the topic, discussing the state-of-art forwarding algorithms. Then we introduce
-an implementation proposal of Groups NET algorithm [add-reference] in a distributed environment.
-The implementation detail is explained in two parts: the first covers the group detection algorithm and the
-second the forwarding implementation itself.
+In D2D networks communication is established when a contact occurs, and the contacts are driven by human mobility.
+Therefore understanding human mobility and how people interact is a fundamental requirement to create good solutions in this scenario.
+Recent works have shown that the best solutions for D2D communication are those based on social context, mainly those that explore how
+people interact in groups or communities. In this chapter we propose a distributed implementation of Groups-NET, a forwarding algorithm
+based on group encounters \cite{nunes2016leveraging}. We propose an algorithm for group detection and tracking in a distributed environment
+and used this to implement Groups-NET. Through experiments with a real mobility trace containing 115 nodes we show that the solution achieves
+a good delivery ratio with an expressive lower network overhead when compared with the state-of-art BubbleRap algorithm.
 
-\section{Introduction}
+<Write down the chapter structure when finished>
+% This chapter is organized as follows. The section \ref{sec:groupsNet} details the original Groups NET implementation as is proposed in \cite{nunes2016leveraging}.
+% The section \ref{sec:distributedGroupsNET} details the proposed distributed implementation inspired by the original Groups NET. This sectio is divided in two parts: in
+% \ref{subsec:subsec:groupDetection} the grouping detection algorithm is detailed and in \ref{subsec:forwardingDistGroupsNET} the forwarding decision is also detailed.
+% In section \ref{sec:GNExperiments}
 
-Introduce the challenge of forwarding messages in this scenario of dynamic nodes movement.
+\section{The Groups NET Algorithm}
+\label{sec:groupsNet}
 
-The main solutions were initially proposed in the context of DTNs (Delay Tolerant Networks) or are derived from them,
-since the two types of networks share some intrinsic characteristics.
+Groups-NET is a multi hop and multi copy forwarding algorithm for D2D networks that explores people group meetings to propagate content.
+A group is defined as a set of people that are together in a place due to a common goal. For example, people working in the same company or students attending the same class.
+The algorithm is based on the idea that group encounters show some regularity along the time, because in general people have regular schedules and routines. Therefore we
+can explore group encounters to forward messages. In their previous work, \citet{groupMobility} proposed an algorithm for group detection and tracking, in which
+detected groups show encounters regularity along the time, mainly on daily and weekly basis. This algorithm operates on contact traces.
 
-Add a brief description about message forwarding in D2D.
+First, the contact trace is split considering time windows of a predefined size. Contacts in each time window are used
+to create contact graphs, in which vertices denotes devices and edges denotes contacts in that time window. After this
+a sequence of graph contacts along the time is created, representing people contacts along the time. For each of these graphs
+the clustering algorithm Clique Percolation \cite{derenyi2005clique} is executed, to find clusters based on the contacts of a time interval.
+A cluster in a contact graph represents a group encounter in a that time interval. In order to find groups that have encounters in different time windows
+the authors introduced the \textit{Group Correlation Coefficient} metric, which measures the similarity of two group captured in distinct contact graphs returning a value
+between 0 and 1. It is defined as the number of intersection members of the two groups divided by the number of members of the union of the groups.
 
-Add description for the following algorithms:
+<Finish to explain how the forwarding decision is defined based on group encounters>
 
-* Epidemic routing
-* Prophet
-* Bubble Rap
-* Original Groups NET
+<Discuss the centralized nature of this solution and talk about the major challenges to develop>
 
-\section{The Distributed Groups NET}
+<The following sections were not revised yet, I put just some notes to guide me>
+
+\section{Distributed Groups NET}
+\label{sec:distributedGroupsNET}
 
 In this section we propose a distributed implementation of Groups NET forwarding algorithm. The solution is
 comprised of two stages: The first stage is group detection, in which nodes use neighborhood discovery to
@@ -31,7 +47,8 @@ infer social group meeting using a local algorithm. The second stage is message 
 use the generated group data to decide when to forward a message or not. The following sections describe in
 details the two stages.
 
-\subsection{Mobile Group Detection}
+\subsection{Grouping Detection and Tracking}
+\label{subsec:groupDetection}
 
 The mobile group detection algorithm proposed here is derived from the ideas presented in \cite{groupMobility}.
 A group is defined as a set of people that get in contact on a given point of space and time. The authors show that
@@ -105,3 +122,25 @@ network knowledge. So, in the end the local combined groups are updated with nei
 \subsubsection{Group Graph Creation}
 
 In this step we build the graph of groups using the combined groups created by the neighborhood inspection process. The graph is created using the approach described in \cite{groupMobility}
+
+\subsection{Forwaring Decision}
+\label{subsec:forwardingDistGroupsNET}
+
+\section{Experiments}
+\label{sec:GNExperiments}
+
+\section{Results}
+\label{sec:GNResults}
+
+\section{Conclusion}
+\label{sec:GNConclusion}
+
+
+\section{The Distributed Groups NET}
+
+
+
+\subsection{Mobile Group Detection}
+
+
+

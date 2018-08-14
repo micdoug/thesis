@@ -7,7 +7,7 @@ To support this demand we have been improving the network infrastructure. In ind
 they are smaller and we have more control over the number of devices. However when we are dealing with outdoor environments this approach can be
 unfeasible, because in this case we have a dynamic scenario in which the number of devices and consequently the traffic demand can be unpredictable.
 
-In the current mobile communication model devices must contact a base station to communicate with other devices or services.
+In current mobile communication model, devices must contact a base station to communicate with other devices or services.
 Recent works have explored a new communication model in which mobile devices can bypass the base station to communicate directly
 with near devices. This model is called Device to Device communication or D2D \cite{yang2013solving}. This approach has several applications,
 for example offload traffic from base stations~\cite{yang2013solving,nunes2016leveraging,aijaz2013survey,pyattaev2013proximity,andreev2014cellular,bastug2014living},
@@ -16,10 +16,10 @@ to provide proximity based services \cite{lin2014overview} and  to provide exten
 The D2D communication shows itself as a sensible solution to evolve the mobile network system and improve the devices experience. However there
 are some characteristics of this scenario that makes the regular Internet communication protocols unapplicable. One of the major characteristics is
 the absence of end-to-end path between two nodes. This occurs because messages are transmitted when there are contacts between two or more nodes, and
-these contacts are defined by people mobility. This fact by itself makes the IP protocol routing mechanism unapplicable, which makes the routing problem
-one of the major topics of study \cite{misra2016opportunistic}. Other characteristic is the intermittently connections also caused by nodes mobility. In the regular IP protocol nodes
-after receiving a packet immediately forwards it to the next hop based on its routing table. Due to intermittently connections, nodes can't forward the message
-immediately in some cases.
+these contacts driven by people mobility. This fact by itself makes the IP protocol routing mechanism unapplicable, which makes the routing problem
+one of the major topics of study \cite{misra2016opportunistic}. Other characteristic is the intermittently connections also caused by nodes mobility.
+In the regular IP protocol, nodes after receiving a packet immediately forwards it to the next hop based on its routing table. Due to intermittently connections,
+nodes can't forward the message immediately in some cases.
 
 These problems were discussed and solutions were proposed in the context of Disruption Tolerant Networks (DTNs) \cite{fall2003delay}.
 Regular networks are based on the \textit{store-and-forward} paradigm, in which nodes after receiving a message
@@ -49,3 +49,19 @@ The work is organized as follows. In chapter \ref{ch:MessageForwarding} we discu
 concepts to understand the proposed solutions. In chapter \ref{ch:StDrop} we discuss the classic approaches of buffer management and introduce the proposed algorithm ST-Drop.
 In chapter \ref{ch:GroupsNet} we introduce the distributed implementation of the Groups-NET algorithm and present some initial results. And in chapter \ref{ch:Conclusion} we conclude the work
 with a summary of the main results and discuss future works to expand the research.
+
+<I need to break this down into the following sections.>
+
+\section{Motivation}
+\label{sec:intro.motivation}
+
+\section{The Problem}
+\label{sec:intro.problemStatement}
+
+\section{Objectives and Goals}
+\label{sec:intro.motivation}
+
+\section{Text Structure}
+\label{sec:intro.motivation}
+
+
