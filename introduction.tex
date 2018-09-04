@@ -1,67 +1,28 @@
 \chapter{Introduction}
 \label{ch:Introduction}
 
-Mobile devices have become smaller and more powerful over the years. Smartphone based computing and communication has become ubiquitous.
-Connected services and applications like social networks, instant messaging apps, content distribution systems and games, for example, have imposed several traffic growth in the mobile network.
-To support this demand we have been improving the network infrastructure. In indoor environments this strategy is feasible, because usually
-they are smaller and we have more control over the number of devices. However when we are dealing with outdoor environments this approach can be
-unfeasible, because in this case we have a dynamic scenario in which the number of devices and consequently the traffic demand can be unpredictable.
-
-In current mobile communication model, devices must contact a base station to communicate with other devices or services.
-Recent works have explored a new communication model in which mobile devices can bypass the base station to communicate directly
-with near devices. This model is called Device to Device communication or D2D \cite{yang2013solving}. This approach has several applications,
-for example offload traffic from base stations~\cite{yang2013solving,nunes2016leveraging,aijaz2013survey,pyattaev2013proximity,andreev2014cellular,bastug2014living},
-to provide proximity based services \cite{lin2014overview} and  to provide extended network coverage under emergency scenarios \cite{babun2015multi}.
-
-The D2D communication shows itself as a sensible solution to evolve the mobile network system and improve the devices experience. However there
-are some characteristics of this scenario that makes the regular Internet communication protocols unapplicable. One of the major characteristics is
-the absence of end-to-end path between two nodes. This occurs because messages are transmitted when there are contacts between two or more nodes, and
-these contacts driven by people mobility. This fact by itself makes the IP protocol routing mechanism unapplicable, which makes the routing problem
-one of the major topics of study \cite{misra2016opportunistic}. Other characteristic is the intermittently connections also caused by nodes mobility.
-In the regular IP protocol, nodes after receiving a packet immediately forwards it to the next hop based on its routing table. Due to intermittently connections,
-nodes can't forward the message immediately in some cases.
-
-These problems were discussed and solutions were proposed in the context of Disruption Tolerant Networks (DTNs) \cite{fall2003delay}.
-Regular networks are based on the \textit{store-and-forward} paradigm, in which nodes after receiving a message
-immediately forward it to other connected node that can help to deliver the message to the destiny. DTN networks define the \textit{store-carry-and-forward} paradigm,
-in which a node after receiving a message, it stores it in a persistent buffer, and carries it until there is a proper contact to forward the message.
-
-The \textit{store-carry-and-forward} paradigm solves the primary problem of communication, making it possible to transmit a message from a node to another, however there is still some problems to solve.
-One of the major problems is the connection establishment. In D2D networks the communication process is highly dependent of nodes cooperation and resource sharing. Regarding the connection establishment
-there is a discussion of the best interface to use. Some works propose the spectrum sharing between D2D connections and regular mobile network connections \cite{lin2014spectrum}. The major benefit of using this
-approach is the higher network performance and the major challenge is to define a good spectrum allocation mechanism to evict communication interference between closer devices and base stations.
-Some works propose the use of secondary interfaces like WIFI and bluetooth \cite{mao2015contact}. The major benefit of this approach is the reduced interference with closer connections and
-simplified connection establishment mechanism. The major problem is the reduced network performance.
-
-With a defined communication interface and the data transmission paradigm \textit{store-carry-and-forward} it is possible to forward messages in the network using only D2D communications.
-However there still an interesting problem to solve: the routing protocol. As said earlier in this scenario there is no predefined end-to-end path between two nodes, so the regular IP routing mechanism does not work \cite{misra2016opportunistic}.
-There are several proposals to solve this problem, in which the major solutions are based on flooding variations, probability functions and social context exploration.
-We will discuss the major solutions in depth in the next chapter. One thing to notice is that the algorithms based on utility functions (probability and social context based strategies, mainly)
-tend to concentrate the network traffic in some nodes with higher utility values, penalizing them \cite{chilipirea2013energy}. This is a remarkable problem, because
-in networks that use the \textit{store-carry-and-forward} paradigm nodes need to allocate a buffer to store messages until there is chance to forward it. If the traffic is too high, some nodes can have problems of
-buffer overflow \cite{silva2015survey}.
-
-This work has two major contributions. First we propose a new buffer management strategy called \textit{Space Time Drop} or just ST-Drop that aims to solve the problem of buffer management under high traffic demands.
-The proposed solution shows a notable performance when combined with social aware and probability based routing algorithms, outperforming classic approaches.
-The second contribution is the definition of a distributed implementation of a new social aware routing algorithm called Groups-NET proposed in \cite{nunes2016leveraging}.
-We propose a distributed algorithm for detecting and manage groups. The initial experiments show that the algorithm outperforms the BubbleRap algorithm on network overhead metric with compatible delivery ratio.
-The work is organized as follows. In chapter \ref{ch:MessageForwarding} we discuss the main approaches and algorithms to forward messages in D2D networks. This chapter introduce important
-concepts to understand the proposed solutions. In chapter \ref{ch:StDrop} we discuss the classic approaches of buffer management and introduce the proposed algorithm ST-Drop.
-In chapter \ref{ch:GroupsNet} we introduce the distributed implementation of the Groups-NET algorithm and present some initial results. And in chapter \ref{ch:Conclusion} we conclude the work
-with a summary of the main results and discuss future works to expand the research.
-
-<I need to break this down into the following sections.>
-
 \section{Motivation}
 \label{sec:intro.motivation}
+
+Mobile devices have become smaller and more powerful over the years. Smartphone based computing and communication has become ubiquitous.
+Connected services and applications like social networks, instant messaging, content distribution systems and games, for example, have imposed several traffic growth in the mobile network. One approach to solve this problem is to improve the network infrastructure. In indoor environments this strategy makes sense, because usually they are smaller in number of devices. However in outdoor environments this approach can be unfeasible, because they have a high number of devices that can vary due to people mobility.
+
+Since improving the infrastructure can be insufficient or even unfeasible, researchers have been discussing alternative solutions. The current mobile communication model is driven by base stations, in the sense that devices must contact base stations to communicate with other devices or services. This centralized architecture have imposed a bottleneck on network evolution, so recent works have explored a new communication model in which mobile devices can bypass the base station to communicate directly with near devices. This model is called Device to Device communication or D2D \citep{yang2013solving}, and can be used for offload traffic from base stations \citep*{yang2013solving, nunes2016leveraging, aijaz2013survey, pyattaev2013proximity, andreev2014cellular, bastug2014living}, to provide proximity based services \citep{lin2014overview} and to provide extended network coverage under emergency scenarios \citep{babun2015multi}, for example.
 
 \section{The Problem}
 \label{sec:intro.problemStatement}
 
-\section{Objectives and Goals}
-\label{sec:intro.motivation}
+The D2D communication shows itself as a sensible solution to evolve the mobile network system and improve the devices experience. However the direct communication nature of this model makes the regular Internet communication protocols unapplicable. One of the major reasons for this is the absence of end-to-end path between two nodes, since messages are transmitted when there are contacts between two or more nodes and these contacts are driven by people mobility. This fact by itself makes the IP protocol routing mechanism unapplicable, which makes the routing problem one of the major topics of study \citep{misra2016opportunistic}. Another reason is the intermittently connections caused by nodes mobility, which makes impossible for a node to forward a packet immediately after receiving it, as is expected in the regular IP protocol.
 
-\section{Text Structure}
-\label{sec:intro.motivation}
+These problems were discussed and solutions were proposed in the context of Disruption Tolerant Networks (DTNs) \citep{fall2003delay}. Regular networks are based on the \textit{store-and-forward} paradigm, in which nodes after receiving a message immediately forward it to other connected node that can help to deliver the message to the destiny. DTN networks define the \textit{store-carry-and-forward} paradigm, in which a node after receiving a message, it stores it in a persistent buffer, and carries it until there is a proper contact to forward the message. Using this model we can forward messages in D2D networks, however we need to provide appropriate routing protocols. As said earlier in this scenario there is no predefined end-to-end path between two nodes, so the regular IP routing mechanism does not work \citep{misra2016opportunistic}. There are several proposals to solve this problem, in which the major solutions are based on flooding variations or utility functions derived from probability theorems or social context exploration.
 
+Routing protocols based on utility functions have shown the best balance between message delivery and number of transmissions. However, the major solutions measure utility functions at the individual level, which leads to traffic concentration on nodes with higher utility values, penalizing them \citep{chilipirea2013energy}. This is a remarkable problem, because in networks that use the \textit{store-carry-and-forward} paradigm nodes need to allocate a buffer to store messages until there is chance to forward it. If the traffic is too high, some nodes can have problems of buffer overflow \citep{silva2015survey}.
 
+\section{Contributions}
+\label{sec:intro.objectives}
+
+This work has two major contributions. First we propose a new buffer management strategy called \textit{Space Time Drop} or just ST-Drop that aims to solve the problem of buffer management under high traffic demands. The proposed solution shows a notable performance when combined with social aware and probability based routing algorithms, outperforming classic approaches. The second contribution is the definition of a distributed implementation of a new social aware routing algorithm called Groups-NET proposed in \citep{nunes2016leveraging}. This algorithm does not rely on individual utility functions, which alleviates the problem of traffic concentration on some nodes. We propose a distributed algorithm for detecting and manage groups. The initial experiments show that the algorithm outperforms the BubbleRap algorithm on network overhead metric with compatible delivery ratio.
+
+\section{Structure}
+\label{sec:intro.structure}
+The work is organized as follows. In chapter \ref{ch:MessageForwarding} we discuss the main approaches and algorithms to forward messages in D2D networks. This chapter introduce important concepts to understand the proposed solutions. In chapter \ref{ch:StDrop} we discuss the classic approaches of buffer management and introduce the proposed algorithm ST-Drop. In chapter \ref{ch:GroupsNet} we introduce the distributed implementation of the Groups-NET algorithm and present some initial results. And in chapter \ref{ch:Conclusion} we conclude the work with a summary of the main results and discuss future works to expand the research.
