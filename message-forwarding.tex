@@ -1,71 +1,34 @@
 \chapter{Message Forwarding in D2D Networks}
 \label{ch:MessageForwarding}
 
-In D2D networks messages are forwarded using intermediate nodes as relays through the \textit{store-carry-and-forward} paradigm. A node after receiving a message,
-stores it in a persistent buffer until there is a proper contact to forward the message. The big problem here is how to define when to forward a message upon a contact.
-If too many copies of a message are generated, the network performance degrades because nodes energy and memory consumption get high. With fewer message copies, fewer paths
-are explored, so in general the delivery probability degrades as well because there is no predefined end-to-end path between two nodes. This chapter presents the main forwarding
+In D2D networks messages are forwarded using intermediate nodes as relays through the \textit{store-carry-and-forward} paradigm. Nodes store messages in a persistent buffer until there is a proper contact to forward them. The big problem here is how to decide when to forward a message upon a contact.
+If too many copies of a message are generated, the network performance degrades because nodes energy and memory consumption get high. With fewer message copies, fewer paths are explored, so in general, the delivery probability degrades as well. This chapter presents the main forwarding
 protocols proposed to deal with this problem.
 
-Forwarding protocols built on top of D2D networks can be classified in single-hop and multi-hop protocols. Single-hop protocols uses only the direct contacts of a node to provide
-services. Multi-hop protocols use intermediate nodes to expand the service coverage. This work focus on multi-hop protocols mainly, but in this chapter we take a quick overview of single-hop
-protocols too.
+Forwarding protocols built on top of D2D networks can be classified in single-hop and multi-hop protocols. Single-hop protocols use only the direct contacts of a node to provide services. Multi-hop protocols use intermediate nodes to expand the service coverage. This work focus on multi-hop protocols mainly, but in this chapter, we take a quick overview of single-hop protocols too.
 
-\section{Single Hop Protocols}
+\section{Single-Hop Protocols}
 
-Single hop protocols eliminate the routing problem by exploring only the direct neighbors of a node.
-Protocols in this category usually explore people group or cluster formation to provide local services for data offloading.
-One example of solution that uses this approach is a protocol called WiGroup proposed in \cite{wang2015wigroup}.
-This protocol defines user groups in which there is a group owner that is responsible for connecting to the base station
-and actuate as an intermediate access point. The other members of the group uses the group owner to access network service.
-A similar solution is proposed in \cite{zheng2014social} which uses social relationship analysis in the group formation algorithm.
+Single hop protocols address the routing problem by exploring only the direct neighbors of a node. Protocols in this category usually explore people group or cluster formation to provide local services for data offloading. One example of a solution that uses this approach is a protocol called WiGroup \citep{wang2015wigroup}. This protocol defines user groups in which there is a group owner that is responsible for connecting to the base station and actuate as an intermediate access point. The other members of the group use the group owner as a relay to access network services. A similar solution is proposed in \citep{zheng2014social} which uses social relationship analysis in the group formation algorithm.
 
-The major benefits of these solutions are the reduced number of connections to the base station and it is possible to define cache strategies at group level.
-Single hop protocols are a sensible solution for data offloading. They are specially good for using in events with high number of people in the same area, like in
-stadiums and big concerts \cite{wang2015wigroup}. However, in environments with high mobility they do not perform well, because in this scenario groups are unstable.
-To handle theses scenarios solutions based on multi-hop protocols are recommended.
+The major benefits of these solutions are the reduced number of connections to the base station, and the possibility of defining cache strategies at the group level. Single hop protocols are a sensible solution for data offloading. They are especially good in environments with a high number of people in the same area, like in stadiums and big concerts \citep{wang2015wigroup}. However, in environments with high mobility, they do not perform well, because in this scenario groups are unstable.
+To handle these scenarios solutions based on multi-hop protocols are recommended.
 
-\section{Multi Hop Protocols}
+\section{Multi-Hop Protocols} 
 
-Multi hop protocols use intermediate nodes to forward messages in the network. These protocols can be used for \textit{unicasting} communication, in which a message is forwarded from
-a source to a single destination node. And can also be used for \textit{multicasting} communication, in which a message is forwarded from a source to multiple destination nodes.
-The major multi hop protocols were defined in the context of Disruption Tolerant Networks (DTNs).
-Forwarding algorithms usually explore the unicasting communication to validate the solution, because if unicasting works well, the protocol can be extended to work in multicasting mode \cite{misra2016opportunistic}.
+Multi-hop protocols use intermediate nodes to forward messages in the network. These protocols can be used for \textit{unicasting} communication, in which a message is forwarded from
+a source to a single destination node. Also, they can be used for \textit{multicasting} communication, in which a message is forwarded from a source to multiple destination nodes. Forwarding algorithms usually explore the unicasting communication to validate the solution, because if unicasting works well, the protocol can be extended to work in multicasting mode \citep{misra2016opportunistic}.
 
-Multi hop protocols can be classified as single copy and multi copy. Single copy protocols, as the name suggests, keeps just one copy of a message in the network as in classic networks.
-First Contact and Direct Delivery are the major protocols in this category \cite{misra2016opportunistic}. In the First Contact protocol messages are forwarded every time a node get in contact with other nodes. The message
-is forwarded until it reaches the destination. After forwarding a message the node drops the local copy. In Direct Delivery a node carries a message until it get in contact directly with
-the destination node. These protocols are too simple and shows low performance in dynamic scenarios.
+Multi-hop protocols can be classified as single copy and multi copy. Single copy protocols, as the name suggests, keep just one copy of a message in the network as in traditional networks. First Contact and Direct Delivery are the major protocols in this category \citep{misra2016opportunistic}. In the First Contact protocol messages are forwarded every time a node get in contact with other nodes. The message is forwarded until it reaches the destination. After forwarding a message the node drops the local copy. In Direct Delivery a node carries a message until it gets in contact directly with the destination node. These protocols are too simple and show low performance in dynamic scenarios.
 
-Multi copy protocols create multiple copies of each message to explore multiple paths. This approach is sensible, because since there isn't a predefined path, exploring multiple paths
-can improve delivery ratio. However creating a high number of message copies in the network will increase nodes' power and memory consumption, what in practice can degrade the network
-performance. So a good forwarding algorithm should achieve a good balance of delivery ratio and message copies overhead. Message delivery is not guaranteed is this scenario, so the
-delivery ratio refers to the percentage of created messages delivered to the destination. The message overhead refers to the proportional number of
-copies per created message. It is also important to notice that multi hop protocols are designed to work with content that does not have strict delivery time constraints. Traditional networks have acceptable
-delivery time of few milliseconds, in contrast in D2D multi hop we consider delivery times of some days, a week or higher depending on the used approach.
+Multi-copy protocols create multiple copies of each message to explore multiple paths. This approach is sensible because since there isn't a predefined path, exploring multiple paths can improve the delivery ratio. However creating a high number of message copies in the network will increase nodes' power and memory consumption, what in practice can degrade the network performance. So a good forwarding algorithm should achieve the right balance of delivery ratio and message copies overhead. Message delivery is not guaranteed is this scenario, so the delivery ratio refers to the percentage of created messages delivered to the destination. The message overhead refers to the proportional number of
+copies per created message. It is also important to notice that multi-hop protocols are designed to work with content that does not have strict delivery time constraints. Traditional networks have an acceptable
+delivery time of few milliseconds, in contrast in D2D multi-hop we consider delivery times of some days, a week or higher depending on the used approach.
 
-The Epidemic protocol is the simplest multi copy algorithm \cite{vahdat2000epidemic}. It uses the flooding strategy, in which at each encounter nodes exchange all messages they have.
-Considering a scenario with unlimited nodes' buffer sizes, the Epidemic consists of the upper bound for the delivery ratio and for the network overhead, since it always transmits
-messages in all encounters. However, due to the enormous number of message copies in the network, when the buffer sizes are limited, this strategy may not achieve a high delivery ratio.
-There some approaches derived from epidemic that uses a controlled flooding strategy. The best example is the Spray and Wait protocol \cite{spyropoulos2005spray}, in which the source node forwards a predefined
-number of message copies during its contacts. Nodes that received the message them uses the direct delivery approach to forward the message to the destiny. There is also a variation called Binary Spray and Wait \cite{spyropoulos2005spray} in which
-the source node starts with $L$ messages. At each encounter the source forwards $\frac{L}{2}$ copies until there is only 1 copy left, then it uses the direct delivery strategy. Other nodes
-takes the same approach of the source, but they start with the number of copies received. Both approaches show good delivery ratio with low overhead, however the authors discuss that
-this approach have low performance in scenarios with low mobility, because nodes with only a copy will carry the message until they encounter with the destination. So they propose a
-modified version called Spray and Focus \cite{spyropoulos2007spray}, in which nodes with only one copy left can forward the message like a single copy protocol, dropping the local copy.
-The forwarding decision is based on an utility function that uses a timer that counts the last time a node had a contact with the destination. The authors have shown that this Spray and Focus
-has better performance than Spray and Wait in scenarios with lower mobility.
+The Epidemic protocol is the simplest multi-copy algorithm \citep{vahdat2000epidemic}. It uses the flooding strategy, in which at each encounter nodes exchange all messages they have.
+Considering a scenario with unlimited nodes' buffer capacity, the Epidemic achieves the upper bound delivery ratio result, at the cost of the highest network overhead. However, due to the enormous number of message copies in the network, when the buffer sizes are limited, this strategy may not achieve a high delivery ratio.
+There are some approaches derived from the epidemic that uses a controlled flooding strategy to reduce the number of message copies in the network and improve the performance under limited buffer capacity. The best example is the Spray and Wait protocol \citep{spyropoulos2005spray}, in which the source node forwards a predefined number of message copies during its contacts. Nodes that received the message them uses the direct delivery approach to forward the message to the destination. There is also a variation called Binary Spray and Wait \citep{spyropoulos2005spray} in which the source node starts with $L$ messages. At each encounter the source forwards $\frac{L}{2}$ copies until there is only one copy left, then it uses the direct delivery strategy. Other nodes take the same approach of the source, but they start with the number of copies received. Both approaches show good delivery ratio with low overhead, however, the authors discuss that this approach has low performance in scenarios with low mobility because nodes with only a copy will carry the message until they encounter with the destination. So they propose a modified version called Spray and Focus \citep{spyropoulos2007spray}, in which nodes with only one copy left can forward the message like a single copy protocol, dropping the local copy after forwarding it. The forwarding decision is based on a utility function that uses a timer that counts the last time a node had contact with the destination. The authors have shown that Spray and Focus has better performance than Spray and Wait in scenarios with lower mobility.
 
-More advanced protocols reduce the number of message copies adding a decision mechanism to define if a node should send a message copy or not when an encounter occurs. The Prophet protocol
-is a good example of such protocols \cite{lindgren2003probabilistic}. Prophet uses nodes' contacts history to measure the probability of a given node to deliver the message. When two nodes
-get in contact, they will exchange only the messages for which the other node has a greater delivery probability. The basic idea in Prophet is to assign higher probabilities of meeting
-again to pairs of nodes that have met more recently. Through experiments the authors show that Prophet outperforms previous solutions.
+More advanced protocols reduce the number of message copies adding a decision mechanism to define if a node should send a message copy or not when an encounter occurs. The Prophet protocol is a good example of such protocols \citep{lindgren2003probabilistic}. Prophet uses nodes' contacts history to measure the probability of a given node to deliver the message. When two nodes get in contact, they will exchange only the messages for which the other node has a higher delivery probability. The basic idea in Prophet is to assign higher probabilities of meeting again to pairs of nodes that have met more recently. Through experiments, the authors show that Prophet outperforms previous solutions.
 
-In recent years, researchers have been exploring social aware forwarding strategies. The idea is that, since contacts are driven by human mobility, if we can understand social relationship
-patterns we can improve protocols. A good example of such algorithms is Bubble Rap \cite{hui2011bubble}. It is a social-aware algorithm that exploits the concept of community and network
-node’s popularity. In this algorithm, each node is assigned to at least one social community. Social communities are defined as sets of more densely interconnected nodes
-(groups of nodes that have more contacts among themselves). The popularity of the nodes is measured by the number of distinct contacts a given node in the network has along the time.
-The basic idea of Bubble Rap is to forward the message to nodes with greater global popularity until it reaches a member of the destination communities. Then the message is forwarded
-based on the local popularity (node popularity considering only members of the destination community) until it reaches the destination node. Through experiments the authors show that
-Bubble Rap outperforms previous solutions including the Prophet protocol. Other recent social aware protocol is the Groups-NET \cite{nunes2016groups}. This solution explores the idea of
-regularity of people encounters in groups to forward the messages. This protocol is explored in depth in chapter \ref{ch:GroupsNet}.
+In recent years, researchers have been exploring social aware forwarding strategies. The idea is that since contacts are driven by human mobility if we can understand social relationship patterns we can improve protocols. A good example of such algorithms is Bubble Rap \citep{hui2011bubble}. It is a social-aware algorithm that exploits the concept of community and network node’s popularity. In this algorithm, each node is assigned to at least one social community. Social communities are defined as sets of more densely interconnected nodes (groups of nodes that have more contacts among themselves). The popularity of the nodes is measured by the number of distinct contacts a given node in the network has along the time. The basic idea of Bubble Rap is to forward the message to nodes with higher global popularity until it reaches a member of the destination communities. Then the message is forwarded based on the local popularity (node popularity considering only members of the destination community) until it reaches the destination node. Through experiments, the authors show that Bubble Rap outperforms previous solutions including the Prophet protocol. Other recent social aware protocol is the Groups-NET \citep{nunes2016groups}. This solution explores the regularity of people encounters in groups to forward the messages. This protocol is explored in depth in chapter \ref{ch:GroupsNet}.
