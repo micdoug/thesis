@@ -1,13 +1,7 @@
 \chapter{Groups NET Distributed Implementation}
 \label{ch:GroupsNet}
 
-In D2D networks communication is established when a contact occurs, and the contacts are driven by human mobility.
-Therefore understanding human mobility and how people interact is a fundamental requirement to create good solutions in this scenario.
-Recent works have shown that the best solutions for D2D communication are those based on social context, mainly those that explore how
-people interact in groups or communities. In this chapter we propose a distributed implementation of Groups-NET, a forwarding algorithm
-based on group encounters \cite{nunes2016leveraging}. We propose an algorithm for group detection and tracking in a distributed environment
-and used this to implement Groups-NET. Through experiments with a real mobility trace containing 115 nodes we show that the solution achieves
-a good delivery ratio with an expressive lower network overhead when compared with the state-of-art BubbleRap algorithm.
+In D2D networks communication is established when a contact occurs, and the contacts are driven by human mobility. Therefore understanding human mobility and how people interact is a fundamental requirement to create suitable routing algorithms. Recent works have shown that the best routing solutions for D2D communication are those based on social context, mainly those that explore how people interact in groups or communities. In this chapter we propose a distributed implementation of Groups-NET, a forwarding algorithm based on group encounters \citep{nunes2016leveraging}. We propose an algorithm for group detection and tracking in a distributed environment and used it to implement Groups-NET. Through experiments with a real mobility trace containing 115 nodes we show that the solution achieves a good delivery ratio with an expressive lower network overhead when compared with the state-of-art BubbleRap algorithm.
 
 <Write down the chapter structure when finished>
 % This chapter is organized as follows. The section \ref{sec:groupsNet} details the original Groups NET implementation as is proposed in \cite{nunes2016leveraging}.
@@ -18,41 +12,40 @@ a good delivery ratio with an expressive lower network overhead when compared wi
 \section{The Groups NET Algorithm}
 \label{sec:groupsNet}
 
-Groups-NET is a multi hop and multi copy forwarding algorithm for D2D networks that explores people group meetings to propagate content.
-A group is defined as a set of people that are together in a place due to a common goal. For example, people working in the same company or students attending the same class.
-The algorithm is based on the idea that group encounters show some regularity along the time, because in general people have regular schedules and routines. Therefore we
-can explore group encounters to forward messages. In their previous work, \citet{groupMobility} proposed an algorithm for group detection and tracking, in which
-detected groups show encounters regularity along the time, mainly on daily and weekly basis. This algorithm operates on contact traces.
+Groups-NET is a multi hop and multi copy forwarding algorithm for D2D networks that explores people group meetings to propagate content. A group is defined as a set of people that are placed near each other in a given point of a time due to a common goal. For example, people working in the same company or students attending the same class. The algorithm is based on the idea that group encounters show some regularity along the time, because in general people have regular schedules and routines. Therefore we can explore group encounters to forward messages. In their previous work, \citet{groupMobility} proposed an algorithm for group detection and tracking, in which detected groups show encounters regularity along the time, mainly on daily and weekly basis.
 
-First, the contact trace is split considering time windows of a predefined size. Contacts in each time window are used
-to create contact graphs, in which vertices denotes devices and edges denotes contacts in that time window. After this
-a sequence of graph contacts along the time is created, representing people contacts along the time. For each of these graphs
-the clustering algorithm Clique Percolation \cite{derenyi2005clique} is executed, to find clusters based on the contacts of a time interval.
-A cluster in a contact graph represents a group encounter in a that time interval. In order to find groups that have encounters in different time windows
-the authors introduced the \textit{Group Correlation Coefficient} metric, which measures the similarity of two group captured in distinct contact graphs returning a value
-between 0 and 1. It is defined as the number of intersection members of the two groups divided by the number of members of the union of the groups.
+This algorithm operates on contact traces and work as follows. First, the contact trace is split considering time windows of a predefined size. Contacts in each time window are used to create contact graphs, in which vertices denotes devices and edges denotes contacts in that time window. After this a sequence of graph contacts along the time is created, representing people contacts along the time. For each of these graphs the clustering algorithm Clique Percolation \citep{derenyi2005clique} is executed, to find clusters based on the contacts of that time interval. A cluster in a contact graph represents a group encounter in a that time interval. In order to find groups that have encounters in different time windows the authors introduced the \textit{Group Correlation Coefficient} metric, which measures the similarity of two group captured in distinct contact graphs returning a value. This metric is defined as the number of intersection members of the two groups divided by the number of members of the union of the groups, therefore returning a value between 0 and 1. Groups detected in distinct time windows with \textit{Group Correlation Coefficient} greater or equals $0.5$ are considered as the same group with multiple encounters.
 
-<Finish to explain how the forwarding decision is defined based on group encounters>
+Groups-NET forwards messages using the most probable group-to-group route. To compute this route, a graph is created in which groups are the vertices and there is an edge between each possible pair of groups. The edges are weighted considering the group correlation coefficient between the two groups and the probability of each group of encountering in the near future. The group correlation coefficient is expressed in equation \ref{eq:groupCorrelationCoefficient}. The probability of a group encountering is defined in equation \ref{eq:encounterProbability}, in which $TTL$ represents the time before a message is expired (we are interested in the probability of a group encountering before a given message has TTL expired) and $N$ represents the number of times a group has met considering the last $T$ hours. Based on these two values the edge weight is computed according to equation \ref{eq:edgeWeight}.
 
-<Discuss the centralized nature of this solution and talk about the major challenges to develop>
+\begin{equation}
+	\label{eq:groupCorrelationCoefficient}
+	GC_{G_1G_2} = \frac{(G_1 \cap G_2)}{(G_1 \cup G_2)}
+\end{equation}
 
-<The following sections were not revised yet, I put just some notes to guide me>
+\begin{equation}
+	\label{eq:encounterProbability}
+    P_G = 1 - e^{(-\frac{TTL * N}{T})}
+\end{equation}
+
+\begin{equation}
+	\label{eq:edgeWeight}
+    E_{G_1G_2} = -\log(GC_{G_1G_2} * P_{G1} * P_{G2})
+\end{equation}
+
+With the group graph built it is possible to define the route to forward a message. Given a message with defined source and destination nodes, we compute shortest paths for each pair of groups $(G_s \rightarrow G_d)$, in which $G_s$ is a group that the source is present and $G_d$ is a group that the destination node is present. From this list of paths the shortest one is chosen as the most probable group-to-group path. The message if forwarded upon a contact if the other node is present in one of the groups of the chosen path.
+
+Thought experiments, the authors show that Groups-NET outperforms Bubble-Rap in terms of network overhead. However, this solution relies on the global network knowledge to detect and track groups, which is unfeasible in real scenarios. But the authors discussed that creating a distributed algorithm for detecting and tracking groups should be possible using a the history of contacts of the node. With this solution in place, the remaining definitions for forwarding messages used by Groups-NET can be applied without modifications. In the following section we present a solution to tackle this problem.
 
 \section{Distributed Groups NET}
 \label{sec:distributedGroupsNET}
 
-In this section we propose a distributed implementation of Groups NET forwarding algorithm. The solution is
-comprised of two stages: The first stage is group detection, in which nodes use neighborhood discovery to
-infer social group meeting using a local algorithm. The second stage is message forwarding, in which nodes
-use the generated group data to decide when to forward a message or not. The following sections describe in
-details the two stages.
+In this section we propose a distributed implementation of Groups-NET forwarding algorithm. We define a group detection algorithm in which nodes use neighborhood discovery to infer social group meetings. This detection algorithm is then combined with the original forwarding decision mechanism defined by \citet{nunes2016leveraging} to build the distributed version of Groups-NET.
 
 \subsection{Grouping Detection and Tracking}
 \label{subsec:groupDetection}
 
-The mobile group detection algorithm proposed here is derived from the ideas presented in \cite{groupMobility}.
-A group is defined as a set of people that get in contact on a given point of space and time. The authors show that
-group encounters have some level of regularity along the time (mainly at daily and weekly basis). This property can be used by forwarding algorithms.
+The mobile group detection algorithm proposed here is derived from the ideas presented in \cite{groupMobility}. A group is defined as a set of people that get in contact on a given point of space and time. The authors show that group encounters have some level of regularity along the time (mainly at daily and weekly basis). This property can be used by forwarding algorithms.
 
 In the original proposal the authors use a approach to detect groups based on global network knowledge. They basically
 build a contact graph considering a predefined time interval, and for each graph is used the Clique Percolation community
